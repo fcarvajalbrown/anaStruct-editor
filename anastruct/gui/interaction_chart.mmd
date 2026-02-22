@@ -1,31 +1,32 @@
 flowchart TD
-    subgraph GUI["gui/ (your code)"]
+    subgraph GUI ["gui/ (your code)"]
         direction TB
-        E[editor/canvas.py\ntoolbar, inspector]
-        S[model/scene.py\nnodes, elements, supports, loads]
+        E[editor/canvas.py<br/>toolbar, inspector]
+        S[model/scene.py<br/>nodes, elements, supports, loads]
         B[solver/bridge.py]
         IO[io/serializer + deserializer]
 
         E -->|reads & mutates| S
         S -->|passed to| B
         S -->|serialized by| IO
-        IO -->|writes/reads| JSON[.json file]
+        IO -->|writes/reads| JSON_FILE[".json file"]
     end
 
-    subgraph ANASTRUCT["anastruct/ (untouched)"]
+    subgraph ANASTRUCT ["anastruct/ (untouched)"]
         direction TB
-        SYS[fem/system.py\nSystemElements]
+        SYS[fem/system.py<br/>SystemElements]
         SOLVE[.solve()]
-        PLOT[.show_results()\nmatplotlib]
+        PLOT[".show_results()<br/>(matplotlib)"]
 
         SYS --> SOLVE
         SOLVE --> PLOT
     end
 
-    B -->|"add_element()\nadd_support_fixed()\npoint_load()\n..."| SYS
-    PLOT -->|matplotlib figure| R[editor/results.py\nrenders in Dear PyGui]
+    B -->|"add_element()<br/>add_support_fixed()<br/>point_load()"| SYS
+    PLOT -->|matplotlib figure| R[editor/results.py<br/>renders in Dear PyGui]
 
-    style GUI fill:#1a3c5a22,stroke:#2E6DA4
-    style ANASTRUCT fill:#2d1a0022,stroke:#8B4513
+    %% Style Definitions
+    style GUI fill:#e6f0fa,stroke:#2E6DA4
+    style ANASTRUCT fill:#f5ece2,stroke:#8B4513
     style B fill:#2E6DA4,color:#fff
-    style JSON fill:#444,color:#fff
+    style JSON_FILE fill:#444,color:#fff
