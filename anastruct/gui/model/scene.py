@@ -140,6 +140,10 @@ class Scene:
     def get_support(self, node_id: int) -> Optional[Support]:
         """Return the Support on the given node, or None if not found."""
         return next((s for s in self.supports if s.node_id == node_id), None)
+    
+    def get_support_by_id(self, support_id: int) -> Optional[Support]:
+        """Return the Support with the given ID, or None if not found."""
+    return next((s for s in self.supports if s.id == support_id), None)
 
     # ------------------------------------------------------------ point loads
 
