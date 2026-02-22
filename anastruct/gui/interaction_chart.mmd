@@ -1,5 +1,5 @@
 flowchart TD
-    subgraph GUI ["gui/ (your code)"]
+    subgraph GUI ["gui/ (proposal of editor) "]
         direction TB
         E["editor/canvas.py<br/>toolbar, inspector"]
         S["model/scene.py<br/>nodes, elements, supports, loads"]
@@ -12,7 +12,7 @@ flowchart TD
         IO -->|writes/reads| JSON_FILE[".json file"]
     end
 
-    subgraph ANASTRUCT ["anastruct/ (untouched)"]
+    subgraph ANASTRUCT ["anastruct/ (untouched clone)"]
         direction TB
         SYS["fem/system.py<br/>SystemElements"]
         SOLVE[".solve()"]
