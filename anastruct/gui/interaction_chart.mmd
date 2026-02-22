@@ -1,0 +1,31 @@
+flowchart TD
+    subgraph GUI["gui/ (your code)"]
+        direction TB
+        E[editor/canvas.py\ntoolbar, inspector]
+        S[model/scene.py\nnodes, elements, supports, loads]
+        B[solver/bridge.py]
+        IO[io/serializer + deserializer]
+
+        E -->|reads & mutates| S
+        S -->|passed to| B
+        S -->|serialized by| IO
+        IO -->|writes/reads| JSON[.json file]
+    end
+
+    subgraph ANASTRUCT["anastruct/ (untouched)"]
+        direction TB
+        SYS[fem/system.py\nSystemElements]
+        SOLVE[.solve()]
+        PLOT[.show_results()\nmatplotlib]
+
+        SYS --> SOLVE
+        SOLVE --> PLOT
+    end
+
+    B -->|"add_element()\nadd_support_fixed()\npoint_load()\n..."| SYS
+    PLOT -->|matplotlib figure| R[editor/results.py\nrenders in Dear PyGui]
+
+    style GUI fill:#1a3c5a22,stroke:#2E6DA4
+    style ANASTRUCT fill:#2d1a0022,stroke:#8B4513
+    style B fill:#2E6DA4,color:#fff
+    style JSON fill:#444,color:#fff
