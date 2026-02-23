@@ -25,13 +25,12 @@ Run from the repo root (anastruct-editor/anastruct/):
 
 import dearpygui.dearpygui as dpg
 
-from .editor.state import EditorState
 from .editor.canvas import Canvas
-from .editor.toolbar import Toolbar
 from .editor.inspector import Inspector
-from .editor.scene_tree import SceneTree
 from .editor.results import ResultsPanel
-
+from .editor.scene_tree import SceneTree
+from .editor.state import EditorState
+from .editor.toolbar import Toolbar
 
 # Window dimensions
 WINDOW_WIDTH  = 1400
@@ -84,7 +83,7 @@ def main() -> None:
         # ---- toolbar row
         toolbar.build()
         dpg.add_separator()
-        dpg.add_spacing(count=1)
+        dpg.add_spacer(height=4)
 
         # ---- main row: tree | canvas | inspector
         with dpg.group(horizontal=True):

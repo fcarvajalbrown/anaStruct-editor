@@ -16,15 +16,15 @@ New and Open check state.dirty and show a confirmation popup before
 discarding unsaved changes.
 """
 
-import dearpygui.dearpygui as dpg
 from pathlib import Path
 
-from .state import EditorState, TOOLS
-from .results import ResultsPanel
-from ..solver.bridge import solve
-from ..io.serializer import save
-from ..io.deserializer import load
+import dearpygui.dearpygui as dpg
 
+from ..io.deserializer import load
+from ..io.serializer import save
+from ..solver.bridge import solve
+from .results import ResultsPanel
+from .state import TOOLS, EditorState
 
 TOOLBAR_TAG = "toolbar_panel"
 CONFIRM_TAG = "confirm_discard_popup"
@@ -72,10 +72,11 @@ class Toolbar:
                     tag=f"tool_btn_{tool_key}",
                     label=label,
                     width=100,
-                    callback=lambda tk=tool_key: self._set_tool(tk),
+                    callback=self._set_tool,
+                    user_data=tool_key,
                 )
 
-            dpg.add_separator()
+            dpg.add_spacer(width=8)
 
             # ---- file actions
             dpg.add_button(
@@ -99,7 +100,7 @@ class Toolbar:
                 callback=self._on_save_as,
             )
 
-            dpg.add_separator()
+            dpg.add_spacer(width=8)
 
             # ---- solve actions
             dpg.add_button(
@@ -124,7 +125,7 @@ class Toolbar:
             no_resize=True,
         ):
             dpg.add_text("You have unsaved changes.\nDiscard and continue?")
-            dpg.add_spacing(count=2)
+            dpg.add_spacer(height=8)
             with dpg.group(horizontal=True):
                 dpg.add_button(
                     label="Discard",
@@ -134,31 +135,29 @@ class Toolbar:
                 dpg.add_button(
                     label="Cancel",
                     width=100,
-                    callback=lambda: dpg.configure_item(CONFIRM_TAG, show=False),
+                    callback=lambda s, a: dpg.configure_item(CONFIRM_TAG, show=False),
                 )
 
     # ----------------------------------------------------------------- render
 
     def render(self) -> None:
-        """
-        Update tool button highlight states every frame.
-
-        Active tool button gets a tinted background.
-        """
-        for _, tool_key in TOOL_BUTTONS:
-            tag = f"tool_btn_{tool_key}"
-            if not dpg.does_item_exist(tag):
-                continue
-            if self.state.active_tool == tool_key:
-                dpg.bind_item_theme(tag, _get_active_theme())
-            else:
-                dpg.bind_item_theme(tag, 0)  # reset to default theme
+        """No-op — button themes are updated in _set_tool on click."""
+        pass
 
     # ------------------------------------------------------------------ tools
 
-    def _set_tool(self, tool_key: str) -> None:
-        """Switch the active tool."""
+    def _set_tool(self, sender, app_data, user_data) -> None:
+        """Switch the active tool and update button highlight."""
+        tool_key = user_data
         self.state.set_tool(tool_key)
+        for _, tk in TOOL_BUTTONS:
+            tag = f"tool_btn_{tk}"
+            if not dpg.does_item_exist(tag):
+                continue
+            if tk == tool_key:
+                dpg.bind_item_theme(tag, _get_active_theme())
+            else:
+                dpg.bind_item_theme(tag, 0)
 
     # ----------------------------------------------------------------- file IO
 
@@ -184,16 +183,20 @@ class Toolbar:
 
     def _do_open(self) -> None:
         """Show a file dialog and load the selected scene."""
+        tag = "open_file_dialog"
+        if dpg.does_item_exist(tag):
+            dpg.delete_item(tag)
         dpg.add_file_dialog(
+            tag=tag,
             label="Open Scene",
             default_path=".",
             callback=self._on_file_open_selected,
-            cancel_callback=lambda: None,
+            cancel_callback=lambda s, a: None,
             width=600,
             height=400,
             file_count=1,
-            extensions=[".json"],
         )
+        dpg.add_file_extension(".json", parent=tag)
 
     def _on_file_open_selected(self, sender, app_data) -> None:
         """Called when the user confirms a file in the open dialog."""
@@ -216,15 +219,20 @@ class Toolbar:
 
     def _on_save_as(self) -> None:
         """Show a file dialog and save to the selected path."""
+        tag = "save_file_dialog"
+        if dpg.does_item_exist(tag):
+            dpg.delete_item(tag)
         dpg.add_file_dialog(
+            tag=tag,
             label="Save Scene As",
             default_path=".",
             default_filename="scene.json",
             callback=self._on_file_save_selected,
-            cancel_callback=lambda: None,
+            cancel_callback=lambda s, a: None,
             width=600,
             height=400,
         )
+        dpg.add_file_extension(".json", parent=tag)
 
     def _on_file_save_selected(self, sender, app_data) -> None:
         """Called when the user confirms a path in the save dialog."""
@@ -328,9 +336,9 @@ def _show_error(message: str) -> None:
         no_resize=True,
     ):
         dpg.add_text(message, color=(220, 80, 60, 255))
-        dpg.add_spacing(count=2)
+        dpg.add_spacer(height=8)
         dpg.add_button(
             label="OK",
             width=80,
-            callback=lambda: dpg.delete_item(tag),
+            callback=lambda s, a: dpg.delete_item(tag),
         )

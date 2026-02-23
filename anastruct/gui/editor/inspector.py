@@ -20,12 +20,11 @@ The performance cost is negligible for a property panel this size.
 
 import dearpygui.dearpygui as dpg
 
-from .state import EditorState
-from ..model.node import Node
 from ..model.element import Element
+from ..model.load import DistributedLoad, PointLoad
+from ..model.node import Node
 from ..model.support import Support, SupportType
-from ..model.load import PointLoad, DistributedLoad
-
+from .state import EditorState
 
 # Panel width matches the right sidebar defined in main.py
 PANEL_WIDTH = 280
@@ -114,7 +113,7 @@ class Inspector:
             step=0.5,
             format="%.3f",
             parent=INSPECTOR_TAG,
-            callback=lambda s, v: self._update_node(node.id, x=v),
+            callback=lambda s, v, u=None: self._update_node(node.id, x=v),
         )
         dpg.add_input_float(
             label="Y (m)",
@@ -124,7 +123,7 @@ class Inspector:
             step=0.5,
             format="%.3f",
             parent=INSPECTOR_TAG,
-            callback=lambda s, v: self._update_node(node.id, y=v),
+            callback=lambda s, v, u=None: self._update_node(node.id, y=v),
         )
         dpg.add_separator(parent=INSPECTOR_TAG)
 
@@ -132,7 +131,7 @@ class Inspector:
             label="Delete Node",
             width=PANEL_WIDTH - 16,
             parent=INSPECTOR_TAG,
-            callback=lambda: self._delete_node(node.id),
+            callback=lambda s, a: self._delete_node(node.id),
         )
 
     # ----------------------------------------------- element inspector
@@ -155,7 +154,7 @@ class Inspector:
             default_value=element.element_type,
             horizontal=True,
             parent=INSPECTOR_TAG,
-            callback=lambda s, v: self._update_element(element.id, element_type=v),
+            callback=lambda s, v, u=None: self._update_element(element.id, element_type=v),
         )
         dpg.add_separator(parent=INSPECTOR_TAG)
 
@@ -168,7 +167,7 @@ class Inspector:
             step=1000.0,
             format="%.1f",
             parent=INSPECTOR_TAG,
-            callback=lambda s, v: self._update_element(element.id, EA=v),
+            callback=lambda s, v, u=None: self._update_element(element.id, EA=v),
         )
         dpg.add_input_float(
             label="EI",
@@ -178,7 +177,7 @@ class Inspector:
             step=500.0,
             format="%.1f",
             parent=INSPECTOR_TAG,
-            callback=lambda s, v: self._update_element(element.id, EI=v),
+            callback=lambda s, v, u=None: self._update_element(element.id, EI=v),
         )
         dpg.add_separator(parent=INSPECTOR_TAG)
 
@@ -186,7 +185,7 @@ class Inspector:
             label="Delete Element",
             width=PANEL_WIDTH - 16,
             parent=INSPECTOR_TAG,
-            callback=lambda: self._delete_element(element.id),
+            callback=lambda s, a: self._delete_element(element.id),
         )
 
     # ----------------------------------------------- support inspector
@@ -203,7 +202,7 @@ class Inspector:
             tag="insp_sup_type",
             default_value=support.support_type,
             parent=INSPECTOR_TAG,
-            callback=lambda s, v: self._update_support(support.node_id, support_type=v),
+            callback=lambda s, v, u=None: self._update_support(support.node_id, support_type=v),
         )
 
         # Spring fields — only shown when type is spring
@@ -218,7 +217,7 @@ class Inspector:
                 step=500.0,
                 format="%.1f",
                 parent=INSPECTOR_TAG,
-                callback=lambda s, v: self._update_support(support.node_id, k=v),
+                callback=lambda s, v, u=None: self._update_support(support.node_id, k=v),
             )
             dpg.add_input_int(
                 label="direction",
@@ -228,7 +227,7 @@ class Inspector:
                 max_value=3,
                 width=PANEL_WIDTH - 80,
                 parent=INSPECTOR_TAG,
-                callback=lambda s, v: self._update_support(
+                callback=lambda s, v, u=None: self._update_support(
                     support.node_id, translation=v
                 ),
             )
@@ -238,7 +237,7 @@ class Inspector:
             label="Remove Support",
             width=PANEL_WIDTH - 16,
             parent=INSPECTOR_TAG,
-            callback=lambda: self._delete_support(support.node_id),
+            callback=lambda s, a: self._delete_support(support.node_id),
         )
 
     # ------------------------------------------- point load inspector
@@ -258,7 +257,7 @@ class Inspector:
             step=1.0,
             format="%.2f",
             parent=INSPECTOR_TAG,
-            callback=lambda s, v: self._update_point_load(load.id, Fx=v),
+            callback=lambda s, v, u=None: self._update_point_load(load.id, Fx=v),
         )
         dpg.add_input_float(
             label="Fy",
@@ -268,7 +267,7 @@ class Inspector:
             step=1.0,
             format="%.2f",
             parent=INSPECTOR_TAG,
-            callback=lambda s, v: self._update_point_load(load.id, Fy=v),
+            callback=lambda s, v, u=None: self._update_point_load(load.id, Fy=v),
         )
         dpg.add_separator(parent=INSPECTOR_TAG)
 
@@ -279,7 +278,7 @@ class Inspector:
             default_value=load.load_case,
             width=PANEL_WIDTH - 80,
             parent=INSPECTOR_TAG,
-            callback=lambda s, v: self._update_point_load(load.id, load_case=v),
+            callback=lambda s, v, u=None: self._update_point_load(load.id, load_case=v),
         )
         dpg.add_separator(parent=INSPECTOR_TAG)
 
@@ -287,7 +286,7 @@ class Inspector:
             label="Delete Load",
             width=PANEL_WIDTH - 16,
             parent=INSPECTOR_TAG,
-            callback=lambda: self._delete_point_load(load.id),
+            callback=lambda s, a: self._delete_point_load(load.id),
         )
 
     # ---------------------------------------- distributed load inspector
@@ -306,7 +305,7 @@ class Inspector:
             step=1.0,
             format="%.2f",
             parent=INSPECTOR_TAG,
-            callback=lambda s, v: self._update_distributed_load(load.id, q=v),
+            callback=lambda s, v, u=None: self._update_distributed_load(load.id, q=v),
         )
         dpg.add_separator(parent=INSPECTOR_TAG)
 
@@ -317,7 +316,7 @@ class Inspector:
             default_value=load.direction,
             horizontal=True,
             parent=INSPECTOR_TAG,
-            callback=lambda s, v: self._update_distributed_load(
+            callback=lambda s, v, u=None: self._update_distributed_load(
                 load.id, direction=v
             ),
         )
@@ -330,7 +329,7 @@ class Inspector:
             default_value=load.load_case,
             width=PANEL_WIDTH - 80,
             parent=INSPECTOR_TAG,
-            callback=lambda s, v: self._update_distributed_load(
+            callback=lambda s, v, u=None: self._update_distributed_load(
                 load.id, load_case=v
             ),
         )
@@ -340,7 +339,7 @@ class Inspector:
             label="Delete Load",
             width=PANEL_WIDTH - 16,
             parent=INSPECTOR_TAG,
-            callback=lambda: self._delete_distributed_load(load.id),
+            callback=lambda s, a: self._delete_distributed_load(load.id),
         )
 
     # ---------------------------------------------------------- mutations

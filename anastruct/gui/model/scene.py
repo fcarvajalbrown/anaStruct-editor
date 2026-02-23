@@ -19,10 +19,10 @@ Design rules enforced here:
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .node import Node
 from .element import Element
+from .load import DistributedLoad, PointLoad
+from .node import Node
 from .support import Support
-from .load import PointLoad, DistributedLoad
 
 
 @dataclass
@@ -143,7 +143,9 @@ class Scene:
     
     def get_support_by_id(self, support_id: int) -> Optional[Support]:
         """Return the Support with the given ID, or None if not found."""
-    return next((s for s in self.supports if s.id == support_id), None)
+        return next((s for s in self.supports if s.id == support_id), None)
+
+    
 
     # ------------------------------------------------------------ point loads
 

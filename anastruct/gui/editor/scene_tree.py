@@ -21,7 +21,6 @@ import dearpygui.dearpygui as dpg
 
 from .state import EditorState
 
-
 PANEL_WIDTH = 220
 TREE_TAG = "scene_tree_panel"
 
@@ -85,11 +84,11 @@ class SceneTree:
                 label=f"  Node {node.id}  ({node.x:.1f}, {node.y:.1f})",
                 color=C_NODE,
                 selected=selected,
-                callback=lambda nid=node.id: self.state.select("node", nid),
+                callback=lambda s, a, nid=node.id: self.state.select("node", nid),
                 parent=TREE_TAG,
             )
 
-        dpg.add_spacing(count=2, parent=TREE_TAG)
+        dpg.add_spacer(height=8, parent=TREE_TAG)
 
         _tree_header("Elements", len(scene.elements), parent=TREE_TAG)
         for element in scene.elements:
@@ -102,11 +101,11 @@ class SceneTree:
                 label=f"  [{type_tag}] {element.node_start_id}→{element.node_end_id}",
                 color=C_ELEMENT,
                 selected=selected,
-                callback=lambda eid=element.id: self.state.select("element", eid),
+                callback=lambda s, a, eid=element.id: self.state.select("element", eid),
                 parent=TREE_TAG,
             )
 
-        dpg.add_spacing(count=2, parent=TREE_TAG)
+        dpg.add_spacer(height=8, parent=TREE_TAG)
 
         _tree_header("Supports", len(scene.supports), parent=TREE_TAG)
         for support in scene.supports:
@@ -118,11 +117,11 @@ class SceneTree:
                 label=f"  {support.support_type.upper()}  @ node {support.node_id}",
                 color=C_SUPPORT,
                 selected=selected,
-                callback=lambda sid=support.id: self.state.select("support", sid),
+                callback=lambda s, a, sid=support.id: self.state.select("support", sid),
                 parent=TREE_TAG,
             )
 
-        dpg.add_spacing(count=2, parent=TREE_TAG)
+        dpg.add_spacer(height=8, parent=TREE_TAG)
 
         _tree_header("Point Loads", len(scene.point_loads), parent=TREE_TAG)
         for load in scene.point_loads:
@@ -134,11 +133,11 @@ class SceneTree:
                 label=f"  Fx={load.Fx:.1f} Fy={load.Fy:.1f} @ {load.node_id}",
                 color=C_LOAD_P,
                 selected=selected,
-                callback=lambda lid=load.id: self.state.select("point_load", lid),
+                callback=lambda s, a, lid=load.id: self.state.select("point_load", lid),
                 parent=TREE_TAG,
             )
 
-        dpg.add_spacing(count=2, parent=TREE_TAG)
+        dpg.add_spacer(height=8, parent=TREE_TAG)
 
         _tree_header("Distributed Loads", len(scene.distributed_loads), parent=TREE_TAG)
         for load in scene.distributed_loads:
@@ -150,7 +149,7 @@ class SceneTree:
                 label=f"  q={load.q:.1f}kN/m  el.{load.element_id}",
                 color=C_LOAD_D,
                 selected=selected,
-                callback=lambda lid=load.id: self.state.select("distributed_load", lid),
+                callback=lambda s, a, lid=load.id: self.state.select("distributed_load", lid),
                 parent=TREE_TAG,
             )
 
@@ -161,7 +160,7 @@ class SceneTree:
             + len(scene.distributed_loads)
         )
         if total == 0:
-            dpg.add_spacing(count=4, parent=TREE_TAG)
+            dpg.add_spacer(height=16, parent=TREE_TAG)
             dpg.add_text(
                 "  Scene is empty.\n  Use the toolbar\n  to add objects.",
                 parent=TREE_TAG,

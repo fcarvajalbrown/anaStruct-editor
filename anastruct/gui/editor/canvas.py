@@ -25,16 +25,16 @@ Usage
     canvas.render()         # call every frame inside the Dear PyGui render loop
 """
 
-import dearpygui.dearpygui as dpg
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .state import EditorState
-from ..model.node import Node
-from ..model.element import Element
-from ..model.support import Support
-from ..model.load import PointLoad, DistributedLoad
+import dearpygui.dearpygui as dpg
 
+from ..model.element import Element
+from ..model.load import DistributedLoad, PointLoad
+from ..model.node import Node
+from ..model.support import Support
+from .state import EditorState
 
 # ------------------------------------------------------------------ colours
 # All colours are (R, G, B, A) tuples in 0-255 range for Dear PyGui
@@ -162,7 +162,7 @@ class Canvas:
         ):
             pass  # content is drawn dynamically in render()
 
-        # Mouse handlers — registered on the drawlist item
+        # Item handlers — registered on the drawlist item
         with dpg.item_handler_registry(tag=f"{self.tag}_handlers"):
             dpg.add_item_clicked_handler(
                 button=dpg.mvMouseButton_Left,
@@ -174,6 +174,10 @@ class Canvas:
             )
         dpg.bind_item_handler_registry(self.tag, f"{self.tag}_handlers")
 
+        # Global handler registry — mouse wheel requires mvHandlerRegistry
+        with dpg.handler_registry(tag=f"{self.tag}_global_handlers"):
+            dpg.add_mouse_wheel_handler(callback=self._on_scroll)
+
     # ----------------------------------------------------------------- render
 
     def render(self) -> None:
@@ -182,14 +186,13 @@ class Canvas:
 
         Call this every frame inside the Dear PyGui render loop.
         """
-        # Update canvas origin from widget position
-        pos = dpg.get_item_pos(self.tag)
+        # Update canvas origin from widget screen position
+        pos = dpg.get_item_rect_min(self.tag)
         self.transform.origin_x = pos[0]
         self.transform.origin_y = pos[1]
 
-        # Handle middle-mouse pan and scroll zoom every frame
+        # Handle middle-mouse pan every frame
         self._handle_pan()
-        self._handle_scroll()
 
         # Update hover node
         mx, my = dpg.get_mouse_pos(local=False)
@@ -554,12 +557,13 @@ class Canvas:
             self.transform.pan_x += dx
             self.transform.pan_y += dy
 
-    def _handle_scroll(self) -> None:
-        """Zoom in/out with the scroll wheel."""
-        scroll = dpg.get_mouse_wheel()
-        if scroll > 0:
+    def _on_scroll(self, sender, app_data) -> None:
+        """Zoom in/out with the scroll wheel when canvas is hovered."""
+        if not dpg.is_item_hovered(self.tag):
+            return
+        if app_data > 0:
             self.transform.zoom_in()
-        elif scroll < 0:
+        elif app_data < 0:
             self.transform.zoom_out()
 
     # ------------------------------------------------------------------ tools
